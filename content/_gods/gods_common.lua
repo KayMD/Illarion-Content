@@ -34,7 +34,11 @@ M.PRIESTHOOD_FAVOUR_THRESHOLD = 200  -- minimal favour that is enough to become 
 M.CHANGE_DEVOTION_PENALTY = 50 -- favour decreased when a devoted char switches to another god
 M.CHANGE_DEVOTION_PRIEST_PENALTY = 200 -- favour decreased when a priest char switches to another god
 M.PRAYER_COOLDOWN_sec = 4*60*60
+M.DEFILE_COOLDOWN_sec = 7*24*60*60 --Only allow defiling an altar once per week?
 M.PRAYER_FAVOUR_INCREASE = 15  -- favour bonus for each prayer
+M.PRAYER_SMALL_INCREASE = M.PRAYER_FAVOUR_INCREASE / 2 -- TODO: scalar is set arbitrarily
+M.PRAYER_LARGE_INCREASE = M.PRAYER_FAVOUR_INCREASE * 5 --TODO: scalar is set arbitrarily
+M.DEFILE_BASE_INCREMENT = 100 --TODO: constant is set arbitrarily
 M.FAVOUR_DECAY_PEROID_sec = 1*60*60
 M.FAVOUR_DECAY_COEFF = 0.02  -- favour is multiplied by (1-M.FAVOUR_DECAY_COEFF) every M.FAVOUR_DECAY_PEROID_sec seconds
 M.SACRIFICE_FAVOUR_INCREASE_FOR_VALUE_DOUBLING = 60  -- favour bonus for donating same value as current cumulative value
@@ -81,6 +85,7 @@ M.EFFECT_ID = 600
 M.SACRIFICE_FAVOUR_COEFFICIENT = M.SACRIFICE_FAVOUR_INCREASE_FOR_VALUE_DOUBLING / math.log(2)
 M.LTE_TICK_NEXT_CALLED = M.LTE_TICK_sec * 10
 M._PRAYER_COOLDOWN_COUNTER_RESET = M.PRAYER_COOLDOWN_sec / M.LTE_TICK_sec
+M._DEFILE_COOLDOWN_COUNTER_RESET = M.DEFILE_COOLDOWN_sec / M.LTE_TICK_sec
 M._FAVOUR_DECAY_COUNTER_RESET = M.FAVOUR_DECAY_PEROID_sec / M.LTE_TICK_sec
 M._SACRIFICE_DECAY_COUNTER_RESET = M.SACRIFICE_DECAY_PERIOD_sec / M.LTE_TICK_sec
 
@@ -222,7 +227,8 @@ end
 
 -- Counters for cooldown and decay, stored in LTE data
 M.prayerCooldownCounter = CooldownCounter("prayerCooldownCounter", M._PRAYER_COOLDOWN_COUNTER_RESET)
-M.cooldownCounters = {M.prayerCooldownCounter}
+M.defileCooldownCounter = CooldownCounter("defileCooldownCounter", M._DEFILE_COOLDOWN_COUNTER_RESET)
+M.cooldownCounters = {M.prayerCooldownCounter, M.defileCooldownCounter}
 M.favourDecayCounter = DecayCounter("favourDecayCounter", M._FAVOUR_DECAY_COUNTER_RESET)
 M.sacrificeDecayCounter = DecayCounter("sacrificeDecayCounter", M._SACRIFICE_DECAY_COUNTER_RESET)
 M.decayCounters = {M.favourDecayCounter, M.sacrificeDecayCounter}
