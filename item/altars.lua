@@ -145,22 +145,18 @@ local function deleteItems(User, list)
     end
 end
 
---
---local function checkAudience(god, position)
---    local theCandidates = world:getPlayersInRangeOf(position, 10);
---    local counter = 0;
---    for i = 1, #theCandidates do
---        local candidate = theCandidates[i];
---        if candidate:getQuestProgress(401) == god then
---            counter = counter + 1;
---        end
---    end
---    if counter > 3 then --I need three other characters with the same devotion around
---        return true;
---    else
---        return false;
---    end
---end
+
+local function checkAudience(god, position)
+    local theCandidates = world:getPlayersInRangeOf(position, 10);
+    local counter = 0;
+    for i = 1, #theCandidates do
+        local candidate = theCandidates[i];
+        if gods.isDevoted(candidate, god) then
+            counter = counter + 1;
+        end
+    end
+    return counter > 3
+end
 
 local function canDevote(User, god)
     local result = true
@@ -259,87 +255,45 @@ local function defile(User, god)
     end
 end
 
--- TODO become priest
---local function becomePriest(User, god)
---
--- ===== From lookAt:
---                --For enabling becoming a priest, use the stuff below. Doesn't make any sense without priest magic, though.
---                --[[
---                      if User:getMagicType()== 0 and User:getMagicFlags(0)~= 0 then --a mage! Can't become priest
---                        common.InformNLS(User,"Ein Magier kann leider kein Priester werden.","As a magician, you cannot become a priest anymore.");
---                      elseif User:getMagicType()== 2 and User:getMagicFlags(2)~= 0 then --a bard! Can't become priest
---                        common.InformNLS(User,"Ein Barde kann leider kein Priester werden.","As a bard, you cannot become a priest anymore.");
---                      elseif User:getMagicType()== 3 and User:getMagicFlags(3)~= 0 then --a druid! Can't become priest
---                        common.InformNLS(User,"Ein Druide kann leider kein Priester werden.","As a druid, you cannot become a priest anymore.");
---                      else --a noob, may become priest
---                        common.InformNLS(User,"Um ein Priester "..godName[god].."s zu werden, wirst du folgendes opfern m�ssen:","To become a priest of "..godName[god]..", you'll have to donate:");
---                        User:inform(tellStuff(priestItems[god],User:getPlayerLanguage())); --stuff4priest
---                      end
---                ]]
---            elseif devotion ~= god then
---                -- devoted to another god
---                if (priesthood == 0) then
---                    common.InformNLS(User, "Als Anh�nger einer anderen Gottheit wirst du deinem Gott abschw�ren m�ssen, um dich " .. gods.getNameDe(god) .. " zu weihen.", "As devotee of another god, you'll have to abjure your god to devote yourself to " .. gods.getNameEn(god) .. ".");
---                    common.InformNLS(User, "Um dich " .. gods.getNameDe(god) .. " zu weihen, wirst du folgendes opfern m�ssen:", "To devote yourself to " .. gods.getNameEn(god) .. ", you'll have to donate:");
---                    User:inform(tellStuff(devoteItems[god], User:getPlayerLanguage())); --stuff4devotee
---                else
---                    common.InformNLS(User, "Als Priester einer anderen Gottheit must du deiner Gottheit abschw�ren, um ein Priester " .. gods.getNameDe(god) .. "s zu werden.", "As priest of another god, you'll have to abjure your god to become a priest of " .. gods.getNameEn(god) .. ".");
---                    common.InformNLS(User, "Um ein Priester " .. gods.getNameDe(god) .. "s zu werden, wirst du folgendes opfern m�ssen:", "To devote yourself to " .. gods.getNameEn(god) .. ", you'll have to donate:");
---                    User:inform(tellStuff(devoteItems[god], User:getPlayerLanguage())); --stuff4devotee
---                    User:inform(tellStuff(priestItems[god], User:getPlayerLanguage())); --stuff4priest
---                end
---            end
--- ===== From useItem:
---            elseif (devotion == god) then
---                -- devoted to this god
---                common.InformNLS(User,
---                    "Du betest zu " .. gods.GOD_DE[god] .. " und bekr�ftigst deinen Glauben.",
---                    "You pray to " .. gods.GOD_EN[god] .. " and confirm your faith.");
---                if (priesthood == 0) then
---                    common.InformNLS(User,
---                        "[INFO] An dieser Stelle k�nntest du Priester werden, aber Priestermagie ist noch nicht verf�gbar.",
---                        "[INFO] At this point you could become a priest, but priest magic is not available yet.");
---                    --Below, even more stuff that only makes sense with priest magic. Code makes devotees become priests.
---                    --[[
---                    if User:getMagicType()== 0 and User:getMagicFlags(0)~= 0 then --a mage! Can't become priest
---                      common.InformNLS(User,"Ein Magier kann leider kein Priester werden.","As a magician, you cannot become a priest anymore.");
---                    elseif User:getMagicType()== 2 and User:getMagicFlags(2)~= 0 then --a bard! Can't become priest
---                      common.InformNLS(User,"Ein Barde kann leider kein Priester werden.","As a bard, you cannot become a priest anymore.");
---                    elseif User:getMagicType()== 3 and User:getMagicFlags(3)~= 0 then --a druid! Can't become priest
---                      common.InformNLS(User,"Ein Druide kann leider kein Priester werden.","As a druid, you cannot become a priest anymore.");
---                    else --a noob, may become priest
---                      if checkAudience(god,User.pos) then
---                        if checkStuff(User,priestItems[god]) then
---                          deleteStuff(User,priestItems[god]);
---                          common.InformNLS(User,"Du empfangst die Weihe eines Priesters "..godName[god].."s. Dein Opfer:","You receive the ordination to the priesthood of "..godName[god]..". Your donation:");
---                          world:gfx(31,User.pos);
---                          world:makeSound(13,User.pos);
---                          User:setQuestProgress(402,god); --become priest of this god
---                          User:setMagicType(1);
---                          User:teachMagic(1,1); --priest runes
---                          User:teachMagic(1,2);
---                          User:teachMagic(1,3);
---                        else --does not have the stuff
---                          common.InformNLS(User,"Um ein Priester "..godName[god].."s zu werden, wirst du folgendes opfern m�ssen:","To become a priest of "..godName[god]..", you'll have to donate:");
---                        end --item check
---                        User:inform(tellStuff(priestItems[god],User:getPlayerLanguage())); --stuff4priest
---                      else --not enough devotees around
---                        common.InformNLS(User,"Um die Priesterweihe zu empfangen musst du wenigstens drei Anh�nger "..godName[god].."s zu einer Messe versammeln.","To receive the ordination to the priesthood of "..godName[god]..", you'll have to gather at least three devotees for a mass.");
---                      end --audience check
---                    end --noob
---                    --]]
---                end
--- =====
---    if can become a priest: is not mage/alchenmist/whatever, has enough favour etc
---    audience, rutial etc
---    gods.setPriest(User, god)
---end
+local function becomePriest(User, god)
+    if not gods.isDevoted(User, god) then  -- devoted to another god
+        if not gods.isPriest(User) then
+            common.InformNLS(User, "Als Anh�nger einer anderen Gottheit wirst du deinem Gott abschw�ren m�ssen, um dich " .. gods.getNameDe(god) .. " zu weihen.", "As devotee of another god, you'll have to abjure your god to devote yourself to " .. gods.getNameEn(god) .. ".");
+        else
+            common.InformNLS(User, "Als Priester einer anderen Gottheit must du deiner Gottheit abschw�ren, um ein Priester " .. gods.getNameDe(god) .. "s zu werden.", "As priest of another god, you'll have to abjure your god to become a priest of " .. gods.getNameEn(god) .. ".");
+        end
+        return
+    end
+    -- devoted to this god
+    common.InformNLS(User,
+            "Du betest zu " .. gods.getNameDe(god) .. " und bekr�ftigst deinen Glauben.",
+            "You pray to " .. gods.getNameEn(god) .. " and confirm your faith.");
+    if not gods.isPriest(User, god) then
+        common.InformNLS(User,
+                "[INFO] An dieser Stelle k�nntest du Priester werden, aber Priestermagie ist noch nicht verf�gbar.",
+                "[INFO] At this point you could become a priest, but priest magic is not available yet.");
+        --Below, even more stuff that only makes sense with priest magic. Code makes devotees become priests.
+        if User:getMagicType()== 0 and User:getMagicFlags(0)~= 0 then --a mage! Can't become priest
+            common.InformNLS(User,"Ein Magier kann leider kein Priester werden.","As a mage, you cannot become a priest anymore.");
+        elseif User:getMagicType()== 2 and User:getMagicFlags(2)~= 0 then --a bard! Can't become priest
+            common.InformNLS(User,"Ein Barde kann leider kein Priester werden.","As a bard, you cannot become a priest anymore.");
+        elseif User:getMagicType()== 3 and User:getMagicFlags(3)~= 0 then --a druid! Can't become priest
+            common.InformNLS(User,"Ein Druide kann leider kein Priester werden.","As a druid, you cannot become a priest anymore.");
+        else --a noob, may become priest
+            if checkAudience(god,User.pos) then
+                gods.setPriest(User)
+            else --not enough devotees around
+                common.InformNLS(User,"Um die Priesterweihe zu empfangen musst du wenigstens drei Anh�nger "..gods.getNameDe(god).."s zu einer Messe versammeln.","To receive the ordination to the priesthood of "..gods.getNameEn(god)..", you'll have to gather at least three devotees for a mass.");
+            end --audience check
+        end --noob
+    end
+end
 
 -- TODO perform service
---local function performService(User, god)
---    priest magic
---    common.TalkNLS(User, Character.say , "#me FIXGERMAN", "#me FIXME performs a service in honor of " .. gods.getNameEn(god))
---end
+--[[local function performService(User, god)
+    --priest magic
+    common.TalkNLS(User, Character.say , "#me FIXGERMAN", "#me FIXME performs a service in honor of " .. gods.getNameEn(god))
+end]]
 
 
 local function ZeniaAltar(User, SourceItem)
@@ -438,11 +392,11 @@ function M.UseItem(User, SourceItem, ltstate)
             { icon = 372, text = "Defile", func = defile,        args = { User, god } }, -- 157 - rotten bark, 26 - clay, 2038/2039 - skull, 3101/3102 - blood, 372 - poison cloud
         }
 --        TODO become priest and perform service
-        if gods.isPriest(User, god) then
-            table.insert(dialogOptions,
-                { icon = 3105, text = "Perform service", func = performService, args = { User, god } } -- 3105 - bookrest, 661 - lectern
-            )
-        elseif gods.isDevoted(User, god) then
+--        if gods.isPriest(User, god) then
+--            table.insert(dialogOptions,
+--                { icon = 3105, text = "Perform service", func = performService, args = { User, god } } -- 3105 - bookrest, 661 - lectern
+--            )else
+        if gods.isDevoted(User, god) then
             table.insert(dialogOptions,
                 { icon = 128, text = "Become a priest", func = becomePriest, args = { User, god } } -- 40 - cleric's staff, 128 - book as in quest
             )
