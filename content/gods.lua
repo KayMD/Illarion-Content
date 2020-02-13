@@ -684,36 +684,4 @@ gods_common.favourDecayCounter:addCallback(M.favourDecay)
 gods_common.sacrificeDecayCounter:addCallback(M.sacrificeDecay)
 gods_common.nargunRandomization:addCallback(nargun.RandomizeSacrificeableItems)
 
-
--- TODO review. This seems to be some old implementation that used speech for priest spells activation
---[[
-local PRAYER_CONVERSION = {
-    {skill = "Healing",
-        gText = "bitte (.+) heilung",
-        eText = "please (.+) healing"
-    }
-}
-
-local PRAYER_MASS = {
-    [M.GOD_NARGUN]   = {gText = "preiset narg[uú]n, gott des chaos",
-                        eText = "praise narg[uú]n, god of chaos"},
-    [M.GOD_???]    = {gText = "preiset",
-                        eText = "praise"},
-}
-
-local PRAYER_FOLLOWER = {
-    [M.GOD_NARGUN]   = {gText = "segne mich nargun",
-                        eText = "bless me nargun"},
-    [M.GOD_???]    = {gText = "segne mich",
-                        eText = "bless me"},
-}
-
-local PRAYER_PRIEST = {
-    [M.GOD_NARGUN]   = {gText = "segne mich erneut nargun",
-                        eText = "bless me again nargun"},
-    [M.GOD_???]    = {gText = "segne mich",
-                        eText = "bless me"},
-}
-
---]]
 return M
