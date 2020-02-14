@@ -29,8 +29,9 @@ local baseNPC = require("npc.base.basic")
 
 local isFittingItem
 local tradeNPCItem
-local PRIMARY_PRICE = 0.15
 local SECONDARY_FRACTION = 2/3
+local MIN_PRICE = 10
+local MAX_PRICE = 21
 
 local tradeNPC = class(function(self, rootNPC)
     if rootNPC == nil or not rootNPC:is_a(baseNPC) then
@@ -216,6 +217,16 @@ function tradeNPC:playerLooksAtItem(player, list, index)
    return lookat.GenerateItemLookAtFromId(player, item._itemId, item._stack, item._data)
 end
 
+--As players online go down to one, sell price goes up to max (20% at one char)
+--At 10 players, price is 10%
+--At 5 players, price is 15%
+--For secondary crafts, value is multiplied by SECONDARY_FRACTION e.g. 2/3 or 1/2
+function tradeNPC:getPriceForPlayersOnline(baseFraction)
+    local onlineChars = world:getPlayersOnline()
+    return (math.max(MIN_PRICE, MAX_PRICE - onlineChars)) / 100 * baseFraction
+end
+
+
 tradeNPCItem = class(function(self, id, itemType, nameDe, nameEn, price, stack, quality, data)
     if (id == nil or id <= 0) then
         error("Invalid ItemID for trade item")
@@ -240,9 +251,9 @@ tradeNPCItem = class(function(self, id, itemType, nameDe, nameEn, price, stack, 
         if (itemType == "sell") then
             self["_price"] = world:getItemStatsFromId(id).Worth
         elseif (itemType == "buyPrimary") then
-            self["_price"] = world:getItemStatsFromId(id).Worth * PRIMARY_PRICE
+            self["_price"] = world:getItemStatsFromId(id).Worth * self:getPriceForPlayersOnline(1)
         elseif (itemType == "buySecondary") then
-            self["_price"] = world:getItemStatsFromId(id).Worth * PRIMARY_PRICE * SECONDARY_FRACTION
+            self["_price"] = world:getItemStatsFromId(id).Worth * self:getPriceForPlayersOnline(SECONDARY_FRACTION)
         end
     else
         self["_price"] = price
